@@ -1,0 +1,3 @@
+#ignore .txt files (output from keylggr)
+
+*.txt
